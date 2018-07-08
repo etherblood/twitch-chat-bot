@@ -4,6 +4,8 @@ import com.gikk.twirk.Twirk;
 import com.gikk.twirk.TwirkBuilder;
 import com.gikk.twirk.events.TwirkListener;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.Instant;
 
@@ -17,7 +19,9 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String... args) throws IOException, InterruptedException, SQLException {
-        CommandRepository commands = new CommandRepository("jdbc:postgresql://localhost/twitchbot", "twitchbot", "twitchbot");
+        Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost/twitchbot", "twitchbot", "twitchbot");
+        CommandRepository commands = new CommandRepository(connection);
+        WhitelistRepository whitelist = new WhitelistRepository(connection);
 
         String username = args[0];
         String oauth = args[1];
@@ -29,7 +33,7 @@ public class Main {
                 .withBracketTag("bracket")
                 .withArgumentTag("arg")
                 .build();
-        twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser));
+        twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser, whitelist));
         twirk.addIrcListener(new TwirkListener() {
             @Override
             public void onDisconnect() {

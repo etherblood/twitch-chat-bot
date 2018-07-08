@@ -14,12 +14,12 @@ import java.util.List;
  *
  * @author Philipp
  */
-public class CommandRepository implements AutoCloseable {
+public class CommandRepository {
 
     private final Connection psqlConnection;
 
-    public CommandRepository(String url, String user, String password) throws SQLException {
-        psqlConnection = DriverManager.getConnection(url, user, password);
+    public CommandRepository(Connection psqlConnection) {
+        this.psqlConnection = psqlConnection;
     }
 
     public int save(Command command) throws SQLException {
@@ -96,10 +96,5 @@ public class CommandRepository implements AutoCloseable {
             result.add(resultSet.getString(1));
         }
         return result;
-    }
-
-    @Override
-    public void close() throws SQLException {
-        psqlConnection.close();
     }
 }

@@ -18,25 +18,26 @@ import java.util.stream.Collectors;
 public class CommandHandler implements TwirkListener {
 
     private final Twirk twirk;
+    private final WhitelistRepository whitelist;
     private final CommandRepository repo;
     private final Set<String> reserved = new HashSet<>();
     private final CodeParser codeParser;
     private final USER_TYPE minPrivilidge = USER_TYPE.MOD;
 
-    public CommandHandler(Twirk twirk, CommandRepository repo, CodeParser codeParser) {
+    public CommandHandler(Twirk twirk, CommandRepository repo, CodeParser codeParser, WhitelistRepository whitelist) {
         this.twirk = twirk;
         this.repo = repo;
         this.codeParser = codeParser;
+        this.whitelist = whitelist;
         reserved.add("set");
         reserved.add("commands");
         reserved.add("stack");
+        reserved.add("permit");
+        reserved.add("unpermit");
     }
 
     @Override
     public void onPrivMsg(TwitchUser sender, TwitchMessage message) {
-        if( sender.getUserType().value < minPrivilidge.value ) {
-            return;
-        }
         try {
             String text = message.getContent();
             if (text.startsWith("!")) {
@@ -54,9 +55,12 @@ public class CommandHandler implements TwirkListener {
     }
 
     private void handleCommand(Context context) throws SQLException {
+        boolean isAtLeastMod = context.sender.getUserType().value >= minPrivilidge.value;
         switch (context.commandId) {
             case "set":
-                setCommand(context);
+                if (isAtLeastMod || whitelist.isWhitelisted(context.sender.getUserName())) {
+                    setCommand(context);
+                }
                 break;
             case "commands":
                 listCommands(context);
@@ -64,15 +68,31 @@ public class CommandHandler implements TwirkListener {
             case "stack":
                 stack(context);
                 break;
+            case "permit":
+                if (isAtLeastMod) {
+                    whitelist(context, true);
+                }
+                break;
+            case "unpermit":
+                if (isAtLeastMod) {
+                    whitelist(context, false);
+                }
+                break;
             default:
                 textCommand(context);
                 break;
         }
     }
 
+    private void whitelist(Context context, boolean value) throws SQLException {
+        String user = context.commandArgs.trim();
+        whitelist.setWhitelisted(user, value);
+        twirk.channelMessage(user + (whitelist.isWhitelisted(user) ? " is whitelisted" : "not whitelisted"));
+    }
+
     private void textCommand(Context context) throws SQLException {
         context.command = repo.load(context.commandId);
-        if(context.command == null) {
+        if (context.command == null) {
             return;
         }
         twirk.channelMessage(codeParser.codeToText(context));

@@ -10,3 +10,11 @@ CREATE TABLE command
 WITH (
   OIDS=FALSE
 );
+
+CREATE TABLE whitelist
+(
+    sender text PRIMARY KEY
+)
+WITH (
+  OIDS=FALSE
+);
