@@ -1,6 +1,7 @@
 package com.etherblood.twitch.chat.bot;
 
 import com.gikk.twirk.Twirk;
+import com.gikk.twirk.enums.USER_TYPE;
 import com.gikk.twirk.events.TwirkListener;
 import com.gikk.twirk.types.twitchMessage.TwitchMessage;
 import com.gikk.twirk.types.users.TwitchUser;
@@ -20,6 +21,7 @@ public class CommandHandler implements TwirkListener {
     private final CommandRepository repo;
     private final Set<String> reserved = new HashSet<>();
     private final CodeParser codeParser;
+    private final USER_TYPE minPrivilidge = USER_TYPE.MOD;
 
     public CommandHandler(Twirk twirk, CommandRepository repo, CodeParser codeParser) {
         this.twirk = twirk;
@@ -32,6 +34,9 @@ public class CommandHandler implements TwirkListener {
 
     @Override
     public void onPrivMsg(TwitchUser sender, TwitchMessage message) {
+        if( sender.getUserType().value < minPrivilidge.value ) {
+            return;
+        }
         try {
             String text = message.getContent();
             if (text.startsWith("!")) {
