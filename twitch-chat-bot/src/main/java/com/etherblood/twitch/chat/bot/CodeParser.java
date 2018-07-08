@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  */
 public class CodeParser {
 
-    private static final Pattern TAG_PATTERN = Pattern.compile("\\[([a-z]+?)(?:=(.+?))?\\]");
+    private static final Pattern TAG_PATTERN = Pattern.compile("\\[([a-z0-9]+?)(?:=(.+?))?\\]");
     private static final int TAG_GROUP = 1;
     private static final int ATTRIBUTE_GROUP = 2;
 

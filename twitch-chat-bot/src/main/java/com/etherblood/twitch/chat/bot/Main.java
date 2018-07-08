@@ -31,7 +31,10 @@ public class Main {
         CodeParser codeParser = new CodeParserBuilder()
                 .withTimeTag("time")
                 .withBracketTag("bracket")
-                .withArgumentTag("arg")
+                .withRegexTag("regex", 0)
+                .withRegexTag("regex0", 0)
+                .withRegexTag("regex1", 1)
+                .withRegexTag("regex2", 2)
                 .build();
         twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser, whitelist));
         twirk.addIrcListener(new TwirkListener() {

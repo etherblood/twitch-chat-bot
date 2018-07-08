@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -28,20 +30,18 @@ public class CodeParserBuilder {
         return this;
     }
 
-    public CodeParserBuilder withArgumentTag(String tag) {
-        tagStrategies.put(tag, CodeParserBuilder::parseArgument);
+    public CodeParserBuilder withRegexTag(String tag, int groupIndex) {
+        tagStrategies.put(tag, x -> parseRegex(x, groupIndex));
         return this;
     }
     
-    private static String parseArgument(Context context) {
-        int argIndex;
-        try {
-            argIndex = Integer.parseInt(context.tagAttribute);
-        } catch (NumberFormatException e) {
-            argIndex = 0;
+    private static String parseRegex(Context context, int groupIndex) {
+        Pattern pattern = Pattern.compile(context.tagAttribute);
+        Matcher matcher = pattern.matcher(context.commandArgs);
+        if(matcher.find()) {
+            return context.commandArgs.substring(matcher.start(groupIndex), matcher.end(groupIndex));
         }
-        String[] argArray = context.commandArgs.split(" ");
-        return argArray[argIndex % argArray.length];
+        return "[error]";
     }
 
     private static String parseTime(Context context) {
