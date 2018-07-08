@@ -22,7 +22,6 @@ public class Main {
         String oauth = args[0];
         String channel = "#serpent_ai_labs";
         Twirk twirk = new TwirkBuilder(channel, username, oauth)
-                .setVerboseMode(true)
                 .build();
         twirk.connect();
         CodeParser codeParser = new CodeParserBuilder().withTimeTag("time").build();
