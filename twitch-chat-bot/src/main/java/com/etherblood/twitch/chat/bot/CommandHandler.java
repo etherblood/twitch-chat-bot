@@ -87,7 +87,7 @@ public class CommandHandler implements TwirkListener {
     private void whitelist(Context context, boolean value) throws SQLException {
         String user = context.commandArgs.trim();
         whitelist.setWhitelisted(user, value);
-        twirk.channelMessage(user + (whitelist.isWhitelisted(user) ? " is whitelisted" : "not whitelisted"));
+        twirk.channelMessage(user + (whitelist.isWhitelisted(user) ? " is whitelisted" : " not whitelisted"));
     }
 
     private void textCommand(Context context) throws SQLException {
