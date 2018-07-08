@@ -21,18 +21,28 @@ public class CommandRepository implements AutoCloseable {
     }
 
     public int save(String command, String text) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into command values (?, ?) on conflict(id) do update set code=EXCLUDED.code;");
-        prepareStatement.setString(1, command);
-        prepareStatement.setString(2, text);
+        String oldValue = load(command);
+        PreparedStatement prepareStatement;
+        if (oldValue == null) {
+            prepareStatement = psqlConnection.prepareStatement("insert into command values (?, ?);");
+            prepareStatement.setString(1, command);
+            prepareStatement.setString(2, text);
+        } else if (!oldValue.equals(text)) {
+            prepareStatement = psqlConnection.prepareStatement("update command set code=? where id=?;");
+            prepareStatement.setString(1, text);
+            prepareStatement.setString(2, command);
+        } else {
+            return 0;
+        }
         return prepareStatement.executeUpdate();
     }
-    
+
     public int delete(String command) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("delete from command where id=?;");
         prepareStatement.setString(1, command);
         return prepareStatement.executeUpdate();
     }
-    
+
     public String load(String command) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("select code from command where id=?;");
         prepareStatement.setString(1, command);
@@ -42,14 +52,14 @@ public class CommandRepository implements AutoCloseable {
         }
         return null;
     }
-    
+
     public List<String> getCommands(int page, int pageSize) throws SQLException {
         List<String> result = new ArrayList<>();
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("select id from command order by id asc offset ? limit ?;");
         prepareStatement.setInt(1, page * pageSize);
         prepareStatement.setInt(2, pageSize);
         ResultSet resultSet = prepareStatement.executeQuery();
-        while(resultSet.next()) {
+        while (resultSet.next()) {
             result.add(resultSet.getString(1));
         }
         return result;
