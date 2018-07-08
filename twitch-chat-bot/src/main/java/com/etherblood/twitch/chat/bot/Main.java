@@ -30,7 +30,7 @@ public class Main {
             @Override
             public void onDisconnect() {
                 try {
-                    main();
+                    main(args);
                 } catch (IOException | InterruptedException | SQLException ex) {
                     ex.printStackTrace(System.err);
                 }
