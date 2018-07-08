@@ -5,6 +5,7 @@ import com.gikk.twirk.events.TwirkListener;
 import com.gikk.twirk.types.twitchMessage.TwitchMessage;
 import com.gikk.twirk.types.users.TwitchUser;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,61 +36,69 @@ public class CommandHandler implements TwirkListener {
             String text = message.getContent();
             if (text.startsWith("!")) {
                 String[] parts = text.substring(1).split(" ", 2);
-                handleCommand(parts[0], parts.length == 2 ? parts[1] : "");
+                Context context = new Context();
+                context.commandId = parts[0];
+                context.commandArgs = parts.length == 2 ? parts[1] : "";
+                context.now = Instant.now();
+                context.sender = sender;
+                handleCommand(context);
             }
         } catch (Throwable t) {
             t.printStackTrace(System.err);
         }
     }
 
-    private void handleCommand(String command, String args) throws SQLException {
-        switch (command) {
+    private void handleCommand(Context context) throws SQLException {
+        switch (context.commandId) {
             case "set":
-                setCommand(args);
+                setCommand(context);
                 break;
             case "commands":
-                listCommands(args);
+                listCommands(context);
                 break;
             case "stack":
-                stack(args);
+                stack(context);
                 break;
             default:
-                textCommand(command);
+                textCommand(context);
                 break;
         }
     }
 
-    private void textCommand(String command) throws SQLException {
-        String code = repo.load(command);
-        if(code == null) {
+    private void textCommand(Context context) throws SQLException {
+        context.command = repo.load(context.commandId);
+        if(context.command == null) {
             return;
         }
-        twirk.channelMessage(codeParser.codeToText(code));
+        twirk.channelMessage(codeParser.codeToText(context));
+        context.command.useCount++;
+        context.command.lastUsed = context.now;
+        repo.save(context.command);
     }
 
-    private void stack(String command) {
+    private void stack(Context context) {
         twirk.channelMessage("SnekHead");
         twirk.channelMessage("SNekBody");
         twirk.channelMessage("SnekFooter");
     }
 
-    private void setCommand(String args) throws SQLException {
-        String[] parts = args.split(" ", 2);
-        String command = parts[0];
-        if (!reserved.contains(command)) {
-            String value = parts.length == 2 ? parts[1].trim() : "";
-            if (value.isEmpty()) {
-                repo.delete(command);
+    private void setCommand(Context context) throws SQLException {
+        String[] parts = context.commandArgs.split(" ", 2);
+        String commandId = parts[0];
+        if (!reserved.contains(commandId)) {
+            String args = parts.length == 2 ? parts[1].trim() : "";
+            if (args.isEmpty()) {
+                repo.delete(commandId);
             } else {
-                repo.save(command, value);
+                repo.save(new Command(commandId, args, context.sender.getDisplayName()));
             }
         }
     }
 
-    private void listCommands(String args) throws SQLException {
+    private void listCommands(Context context) throws SQLException {
         int page;
         try {
-            page = Integer.parseInt(args);
+            page = Integer.parseInt(context.commandArgs);
         } catch (NumberFormatException e) {
             page = 0;
         }

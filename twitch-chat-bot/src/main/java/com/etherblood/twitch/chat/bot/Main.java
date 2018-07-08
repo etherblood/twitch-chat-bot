@@ -5,6 +5,7 @@ import com.gikk.twirk.TwirkBuilder;
 import com.gikk.twirk.events.TwirkListener;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Instant;
 
 /**
  *
@@ -18,13 +19,16 @@ public class Main {
     public static void main(String... args) throws IOException, InterruptedException, SQLException {
         CommandRepository commands = new CommandRepository("jdbc:postgresql://localhost/twitchbot", "twitchbot", "twitchbot");
 
-        String username = "etherblood_ai";
-        String oauth = args[0];
-        String channel = "#serpent_ai_labs";
+        String username = args[0];
+        String oauth = args[1];
+        String channel = "#" + args[2];
         Twirk twirk = new TwirkBuilder(channel, username, oauth)
                 .build();
-        twirk.connect();
-        CodeParser codeParser = new CodeParserBuilder().withTimeTag("time").build();
+        CodeParser codeParser = new CodeParserBuilder()
+                .withTimeTag("time")
+                .withBracketTag("bracket")
+                .withArgumentTag("arg")
+                .build();
         twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser));
         twirk.addIrcListener(new TwirkListener() {
             @Override
@@ -36,6 +40,8 @@ public class Main {
                 }
             }
         });
+        twirk.connect();
+        System.out.println("Started at " + Instant.now());
     }
 
 }
