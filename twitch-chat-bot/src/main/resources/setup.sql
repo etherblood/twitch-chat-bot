@@ -5,7 +5,8 @@ CREATE TABLE command
     author text NOT NULL,
     usecount int NOT NULL,
     lastused timestamp,
-    lastmodified timestamp NOT NULL
+    lastmodified timestamp NOT NULL,
+    UNIQUE (lower(id))
 )
 WITH (
   OIDS=FALSE

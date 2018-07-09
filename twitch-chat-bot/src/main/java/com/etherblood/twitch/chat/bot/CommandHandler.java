@@ -127,7 +127,7 @@ public class CommandHandler implements TwirkListener {
         } catch (NumberFormatException e) {
             page = 0;
         }
-        String response = repo.getCommands(page, 10)
+        String response = repo.getCommands(page, 25)
                 .stream()
                 .collect(Collectors.joining(" ", "commands page" + page + " [", "]."));
         twirk.channelMessage(response);

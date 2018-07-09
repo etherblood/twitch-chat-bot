@@ -54,7 +54,7 @@ public class CommandRepository {
     }
     
     private int update(Command command) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("update command set code=?, author=?, usecount=?, lastused=?, lastmodified=? where id=?;");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("update command set code=?, author=?, usecount=?, lastused=?, lastmodified=? where lower(id)=lower(?);");
         prepareStatement.setString(1, command.code);
         prepareStatement.setString(2, command.author);
         prepareStatement.setLong(3, command.useCount);
@@ -65,13 +65,13 @@ public class CommandRepository {
     }
 
     public int delete(String commandId) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("delete from command where id=?;");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("delete from command where lower(id)=lower(?);");
         prepareStatement.setString(1, commandId);
         return prepareStatement.executeUpdate();
     }
 
     public Command load(String commandId) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select * from command where id=?;");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select * from command where lower(id)=lower(?);");
         prepareStatement.setString(1, commandId);
         ResultSet commandsResult = prepareStatement.executeQuery();
         if (commandsResult.next()) {
