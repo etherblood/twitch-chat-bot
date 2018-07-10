@@ -87,7 +87,8 @@ public class CommandRepository {
 
     public List<String> getCommands(int page, int pageSize) throws SQLException {
         List<String> result = new ArrayList<>();
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select id from command order by usecount desc, lastused desc, lastmodified desc, id asc offset ? limit ?;");
+        //sorted by use frequency
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select id from command order by (1.0 / (usecount + 1)) * (current_timestamp - lastmodified) asc offset ? limit ?;");
         prepareStatement.setInt(1, page * pageSize);
         prepareStatement.setInt(2, pageSize);
         ResultSet resultSet = prepareStatement.executeQuery();
