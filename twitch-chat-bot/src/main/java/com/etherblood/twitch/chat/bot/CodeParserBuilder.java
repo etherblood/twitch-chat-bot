@@ -59,9 +59,9 @@ public class CodeParserBuilder {
     private static String humanReadableFormat(Duration duration) {
         long totalSeconds = duration.getSeconds();
         long days = TimeUnit.SECONDS.toDays(totalSeconds);
-        long hours = TimeUnit.SECONDS.toHours(totalSeconds - TimeUnit.DAYS.toSeconds(days));
-        long minutes = TimeUnit.SECONDS.toMinutes(totalSeconds - TimeUnit.HOURS.toSeconds(hours));
-        long seconds = totalSeconds - TimeUnit.MINUTES.toSeconds(minutes);
+        long hours = TimeUnit.SECONDS.toHours(totalSeconds) % 24;
+        long minutes = TimeUnit.SECONDS.toMinutes(totalSeconds) % 60;
+        long seconds = totalSeconds % 60;
         List<String> list = new ArrayList<>();
         list.add(days + "days");
         list.add(hours + "hours");
