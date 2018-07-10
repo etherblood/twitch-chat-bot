@@ -30,13 +30,12 @@ public class CodeParser {
             context.tag = matcher.group(TAG_GROUP);
             context.tagAttribute = matcher.group(ATTRIBUTE_GROUP);
             Function<Context, String> strategy = tagStrategies.get(context.tag);
-            int start = matcher.start();
-            int end = matcher.end();
-            String tagText = strategy != null? strategy.apply(context): code.substring(start, end);
-            builder.append(code.substring(position, start));
-            builder.append(tagText);
-            position = end;
+            builder.append(code.substring(position, matcher.start()));
+            builder.append(strategy != null ? strategy.apply(context) : matcher.group());
+            position = matcher.end();
         }
+        context.tag = null;
+        context.tagAttribute = null;
         builder.append(code.substring(position));
         return builder.toString();
     }
