@@ -34,11 +34,11 @@ public class CodeParserBuilder {
         tagStrategies.put(tag, x -> parseRegex(x, groupIndex));
         return this;
     }
-    
+
     private static String parseRegex(Context context, int groupIndex) {
         Pattern pattern = Pattern.compile(context.tagAttribute);
         Matcher matcher = pattern.matcher(context.commandArgs);
-        if(matcher.find()) {
+        if (matcher.find()) {
             return context.commandArgs.substring(matcher.start(groupIndex), matcher.end(groupIndex));
         }
         return "[error]";
@@ -63,8 +63,8 @@ public class CodeParserBuilder {
         long minutes = TimeUnit.SECONDS.toMinutes(totalSeconds) % 60;
         long seconds = totalSeconds % 60;
         List<String> list = new ArrayList<>();
-        list.add(days + "days");
-        list.add(hours + "hours");
+        list.add(days + (days == 1 ? "day" : "days"));
+        list.add(hours + (hours == 1 ? "hour" : "hours"));
         list.add(minutes + "min");
         list.add(seconds + "sec");
         return list.stream().filter(s -> !s.startsWith("0")).limit(2).collect(Collectors.joining(" "));
