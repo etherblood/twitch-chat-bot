@@ -32,8 +32,8 @@ public class CodeParser {
             builder.append(code.substring(position, matcher.start()));
             builder.append(strategy != null ? strategy.apply(context) : matcher.group());
             position = matcher.end();
+            context.tags.removeLast();
         }
-        context.tags.removeLast();
         builder.append(code.substring(position));
         return builder.toString();
     }
