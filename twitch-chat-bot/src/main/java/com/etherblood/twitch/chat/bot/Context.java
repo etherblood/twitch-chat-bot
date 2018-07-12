@@ -2,6 +2,8 @@ package com.etherblood.twitch.chat.bot;
 
 import com.gikk.twirk.types.users.TwitchUser;
 import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  *
@@ -13,6 +15,10 @@ public class Context {
     public String commandArgs;
     public TwitchUser sender;
     public Instant now;
-    public String tag, tagAttribute;
+    public final Deque<Tag> tags = new ArrayDeque<>();
+    
+    public Tag tag() {
+        return tags.getLast();
+    }
     
 }

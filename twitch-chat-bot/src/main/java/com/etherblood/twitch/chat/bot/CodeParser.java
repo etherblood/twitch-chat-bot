@@ -27,15 +27,13 @@ public class CodeParser {
         int position = 0;
         Matcher matcher = TAG_PATTERN.matcher(code);
         while (matcher.find(position)) {
-            context.tag = matcher.group(TAG_GROUP);
-            context.tagAttribute = matcher.group(ATTRIBUTE_GROUP);
-            Function<Context, String> strategy = tagStrategies.get(context.tag);
+            context.tags.addLast(new Tag(matcher.group(TAG_GROUP), matcher.group(ATTRIBUTE_GROUP)));
+            Function<Context, String> strategy = tagStrategies.get(context.tag().type);
             builder.append(code.substring(position, matcher.start()));
             builder.append(strategy != null ? strategy.apply(context) : matcher.group());
             position = matcher.end();
         }
-        context.tag = null;
-        context.tagAttribute = null;
+        context.tags.removeLast();
         builder.append(code.substring(position));
         return builder.toString();
     }

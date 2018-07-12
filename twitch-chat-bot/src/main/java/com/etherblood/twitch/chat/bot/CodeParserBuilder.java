@@ -36,10 +36,10 @@ public class CodeParserBuilder {
     }
 
     private static String parseRegex(Context context, int groupIndex) {
-        Pattern pattern = Pattern.compile(context.tagAttribute);
+        Pattern pattern = Pattern.compile(context.tag().attribute);
         Matcher matcher = pattern.matcher(context.commandArgs);
         if (matcher.find()) {
-            return context.commandArgs.substring(matcher.start(groupIndex), matcher.end(groupIndex));
+            return matcher.group(groupIndex);
         }
         return "[error]";
     }
@@ -47,10 +47,10 @@ public class CodeParserBuilder {
     private static String parseTime(Context context) {
         Instant time;
         try {
-            long epochMilli = Long.parseLong(context.tagAttribute);
+            long epochMilli = Long.parseLong(context.tag().attribute);
             time = Instant.ofEpochMilli(epochMilli);
         } catch (NumberFormatException e) {
-            time = Instant.parse(context.tagAttribute);
+            time = Instant.parse(context.tag().attribute);
         }
         Duration duration = Duration.between(time, Instant.now());
         return humanReadableFormat(duration);
