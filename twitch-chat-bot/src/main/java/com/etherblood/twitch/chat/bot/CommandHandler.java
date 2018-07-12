@@ -19,18 +19,23 @@ public class CommandHandler implements TwirkListener {
 
     private final Twirk twirk;
     private final WhitelistRepository whitelist;
-    private final CommandRepository repo;
+    private final CommandRepository commands;
+    private final ClipRepository clips;
     private final Set<String> reserved = new HashSet<>();
     private final CodeParser codeParser;
     private final USER_TYPE minPrivilidge = USER_TYPE.MOD;
 
-    public CommandHandler(Twirk twirk, CommandRepository repo, CodeParser codeParser, WhitelistRepository whitelist) {
+    public CommandHandler(Twirk twirk, CommandRepository commands, CodeParser codeParser, WhitelistRepository whitelist, ClipRepository clips) {
         this.twirk = twirk;
-        this.repo = repo;
+        this.commands = commands;
+        this.clips = clips;
         this.codeParser = codeParser;
         this.whitelist = whitelist;
         reserved.add("set");
         reserved.add("commands");
+        reserved.add("clips");
+        reserved.add("setclip");
+        reserved.add("clip");
         reserved.add("stack");
         reserved.add("permit");
         reserved.add("unpermit");
@@ -62,8 +67,19 @@ public class CommandHandler implements TwirkListener {
                     setCommand(context);
                 }
                 break;
+            case "setclip":
+                if (isAtLeastMod || whitelist.isWhitelisted(context.sender.getUserName())) {
+                    setClip(context);
+                }
+                break;
             case "commands":
                 listCommands(context);
+                break;
+            case "clips":
+                listClips(context);
+                break;
+            case "clip":
+                getClip(context);
                 break;
             case "stack":
                 stack(context);
@@ -91,14 +107,14 @@ public class CommandHandler implements TwirkListener {
     }
 
     private void textCommand(Context context) throws SQLException {
-        context.command = repo.load(context.commandId);
+        context.command = commands.load(context.commandId);
         if (context.command == null) {
             return;
         }
         twirk.channelMessage(codeParser.codeToText(context));
         context.command.useCount++;
         context.command.lastUsed = context.now;
-        repo.save(context.command);
+        commands.save(context.command);
     }
 
     private void stack(Context context) {
@@ -113,9 +129,22 @@ public class CommandHandler implements TwirkListener {
         if (!reserved.contains(commandId)) {
             String args = parts.length == 2 ? parts[1].trim() : "";
             if (args.isEmpty()) {
-                repo.delete(commandId);
+                commands.delete(commandId);
             } else {
-                repo.save(new Command(commandId, args, context.sender.getDisplayName()));
+                commands.save(new Command(commandId, args, context.sender.getDisplayName()));
+            }
+        }
+    }
+
+    private void setClip(Context context) throws SQLException {
+        String[] parts = context.commandArgs.split(" ", 2);
+        String clipId = parts[0];
+        if (!reserved.contains(clipId)) {
+            String args = parts.length == 2 ? parts[1].trim() : "";
+            if (args.isEmpty()) {
+                clips.delete(clipId);
+            } else {
+                clips.save(new Clip(clipId, args, context.sender.getDisplayName()));
             }
         }
     }
@@ -127,9 +156,33 @@ public class CommandHandler implements TwirkListener {
         } catch (NumberFormatException e) {
             page = 0;
         }
-        String response = repo.getCommands(page, 25)
+        String response = commands.getCommands(page, 25)
                 .stream()
                 .collect(Collectors.joining(", ", "commands page" + page + " [", "]."));
         twirk.channelMessage(response);
+    }
+
+    private void listClips(Context context) throws SQLException {
+        int page;
+        try {
+            page = Integer.parseInt(context.commandArgs);
+        } catch (NumberFormatException e) {
+            page = 0;
+        }
+        String response = clips.getClips(page, 25)
+                .stream()
+                .collect(Collectors.joining(", ", "clips page" + page + " [", "]."));
+        twirk.channelMessage(response);
+    }
+
+    private void getClip(Context context) throws SQLException {
+        Clip clip = clips.load(context.commandArgs);
+        if (clip == null) {
+            return;
+        }
+        twirk.channelMessage(clip.code);
+        clip.useCount++;
+        clip.lastUsed = context.now;
+        clips.save(clip);
     }
 }

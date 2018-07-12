@@ -21,6 +21,7 @@ public class Main {
     public static void main(String... args) throws IOException, InterruptedException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost/twitchbot", "twitchbot", "twitchbot");
         CommandRepository commands = new CommandRepository(connection);
+        ClipRepository clips = new ClipRepository(connection);
         WhitelistRepository whitelist = new WhitelistRepository(connection);
 
         String username = args[0];
@@ -36,7 +37,7 @@ public class Main {
                 .withRegexTag("regex1", 1)
                 .withRegexTag("regex2", 2)
                 .build();
-        twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser, whitelist));
+        twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser, whitelist, clips));
         twirk.addIrcListener(new TwirkListener() {
             @Override
             public void onDisconnect() {
