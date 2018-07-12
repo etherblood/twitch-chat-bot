@@ -139,13 +139,11 @@ public class CommandHandler implements TwirkListener {
     private void setClip(Context context) throws SQLException {
         String[] parts = context.commandArgs.split(" ", 2);
         String clipId = parts[0];
-        if (!reserved.contains(clipId)) {
-            String args = parts.length == 2 ? parts[1].trim() : "";
-            if (args.isEmpty()) {
-                clips.delete(clipId);
-            } else {
-                clips.save(new Clip(clipId, args, context.sender.getDisplayName()));
-            }
+        String args = parts.length == 2 ? parts[1].trim() : "";
+        if (args.isEmpty()) {
+            clips.delete(clipId);
+        } else {
+            clips.save(new Clip(clipId, args, context.sender.getDisplayName()));
         }
     }
 
