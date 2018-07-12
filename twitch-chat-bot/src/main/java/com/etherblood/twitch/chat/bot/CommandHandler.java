@@ -129,7 +129,7 @@ public class CommandHandler implements TwirkListener {
         }
         String response = repo.getCommands(page, 25)
                 .stream()
-                .collect(Collectors.joining(" ", "commands page" + page + " [", "]."));
+                .collect(Collectors.joining(", ", "commands page" + page + " [", "]."));
         twirk.channelMessage(response);
     }
 }
