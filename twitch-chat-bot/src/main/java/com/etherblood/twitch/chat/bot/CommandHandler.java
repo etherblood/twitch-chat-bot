@@ -39,6 +39,7 @@ public class CommandHandler implements TwirkListener {
         baseCommands.put("permit", this::permit);
         baseCommands.put("unpermit", this::unpermit);
         baseCommands.put("cobalt", this::cobalt);
+        baseCommands.put("clip", this::getClip);
     }
 
     @Override
@@ -81,6 +82,9 @@ public class CommandHandler implements TwirkListener {
 
     private void whitelist(Context context, boolean value) throws SQLException {
         String user = context.commandArgs.trim();
+        if(user.startsWith("@")) {
+            user = user.substring(1);
+        }
         whitelist.setWhitelisted(user, value);
         twirk.channelMessage(user + (whitelist.isWhitelisted(user) ? " is whitelisted" : " not whitelisted"));
     }
