@@ -1,5 +1,11 @@
 package com.etherblood.twitch.chat.bot;
 
+import com.etherblood.twitch.chat.bot.commands.CommandRepository;
+import com.etherblood.twitch.chat.bot.commands.Command;
+import com.etherblood.twitch.chat.bot.clips.ClipRepository;
+import com.etherblood.twitch.chat.bot.clips.Clip;
+import com.etherblood.twitch.chat.bot.commands.alias.CommandAlias;
+import com.etherblood.twitch.chat.bot.commands.alias.CommandAliasRepository;
 import com.gikk.twirk.Twirk;
 import com.gikk.twirk.enums.USER_TYPE;
 import com.gikk.twirk.events.TwirkListener;
@@ -20,15 +26,17 @@ public class CommandHandler implements TwirkListener {
     private final Twirk twirk;
     private final WhitelistRepository whitelist;
     private final CommandRepository commands;
+    private final CommandAliasRepository aliases;
     private final ClipRepository clips;
     private final Map<String, CommandConsumer> baseCommands = new HashMap<>();
     private final CodeParser codeParser;
     private final USER_TYPE minPrivilidge = USER_TYPE.MOD;
 
-    public CommandHandler(Twirk twirk, CommandRepository commands, CodeParser codeParser, WhitelistRepository whitelist, ClipRepository clips) {
+    public CommandHandler(Twirk twirk, CommandRepository commands, CodeParser codeParser, WhitelistRepository whitelist, ClipRepository clips, CommandAliasRepository aliases) {
         this.twirk = twirk;
         this.commands = commands;
         this.clips = clips;
+        this.aliases = aliases;
         this.codeParser = codeParser;
         this.whitelist = whitelist;
         baseCommands.put("set", this::setCommand);
@@ -40,6 +48,7 @@ public class CommandHandler implements TwirkListener {
         baseCommands.put("unpermit", this::unpermit);
         baseCommands.put("cobalt", this::cobalt);
         baseCommands.put("clip", this::getClip);
+        baseCommands.put("setalias", this::setAlias);
     }
 
     @Override
@@ -49,7 +58,7 @@ public class CommandHandler implements TwirkListener {
             if (text.startsWith("!")) {
                 String[] parts = text.substring(1).split(" ", 2);
                 Context context = new Context();
-                context.commandId = parts[0];
+                context.commandAlias = parts[0];
                 context.commandArgs = parts.length == 2 ? parts[1] : "";
                 context.now = Instant.now();
                 context.sender = sender;
@@ -61,7 +70,7 @@ public class CommandHandler implements TwirkListener {
     }
 
     private void handleCommand(Context context) throws SQLException {
-        baseCommands.getOrDefault(context.commandId, this::textCommand).consume(context);
+        baseCommands.getOrDefault(context.commandAlias.toLowerCase(), this::textCommand).consume(context);
     }
 
     private void unpermit(Context context) throws SQLException {
@@ -82,7 +91,7 @@ public class CommandHandler implements TwirkListener {
 
     private void whitelist(Context context, boolean value) throws SQLException {
         String user = context.commandArgs.trim();
-        if(user.startsWith("@")) {
+        if (user.startsWith("@")) {
             user = user.substring(1);
         }
         whitelist.setWhitelisted(user, value);
@@ -90,10 +99,11 @@ public class CommandHandler implements TwirkListener {
     }
 
     private void textCommand(Context context) throws SQLException {
-        context.command = commands.load(context.commandId);
-        if (context.command == null) {
+        CommandAlias alias = aliases.load(context.commandAlias);
+        if(alias == null) {
             return;
         }
+        context.command = commands.load(alias.commandId);
         twirk.channelMessage(codeParser.codeToText(context));
         context.command.useCount++;
         context.command.lastUsed = context.now;
@@ -114,13 +124,15 @@ public class CommandHandler implements TwirkListener {
     private void setCommand(Context context) throws SQLException {
         if (hasWritePrivilege(context) || whitelist.isWhitelisted(context.sender.getUserName())) {
             String[] parts = context.commandArgs.split(" ", 2);
-            String commandId = parts[0];
-            if (!baseCommands.containsKey(commandId)) {
+            String alias = parts[0];
+            if (!baseCommands.containsKey(alias)) {
                 String args = parts.length == 2 ? parts[1].trim() : "";
                 if (args.isEmpty()) {
-                    commands.delete(commandId);
+                    CommandAlias loaded = aliases.load(alias);
+                    commands.delete(loaded.commandId);
                 } else {
-                    commands.save(new Command(commandId, args, context.sender.getDisplayName()));
+                    long commandId = commands.save(new Command(args, context.sender.getDisplayName()));
+                    aliases.save(new CommandAlias(alias, commandId));
                 }
             }
         }
@@ -139,6 +151,22 @@ public class CommandHandler implements TwirkListener {
         }
     }
 
+    private void setAlias(Context context) throws SQLException {
+        if (hasWritePrivilege(context) || whitelist.isWhitelisted(context.sender.getUserName())) {
+            String[] parts = context.commandArgs.split(" ");
+            String alias = parts[0];
+            if (!baseCommands.containsKey(alias)) {
+                String args = parts.length >= 2 ? parts[1].trim() : "";
+                if (args.isEmpty()) {
+                    aliases.delete(alias);
+                } else {
+                    CommandAlias loaded = aliases.load(args);
+                    aliases.save(new CommandAlias(alias, loaded.commandId));
+                }
+            }
+        }
+    }
+
     private void listCommands(Context context) throws SQLException {
         int page;
         try {
@@ -146,7 +174,7 @@ public class CommandHandler implements TwirkListener {
         } catch (NumberFormatException e) {
             page = 0;
         }
-        String response = commands.getCommands(page, 25)
+        String response = aliases.getCommands(page, 25)
                 .stream()
                 .collect(Collectors.joining(", ", "commands page" + page + " [", "]."));
         twirk.channelMessage(response);

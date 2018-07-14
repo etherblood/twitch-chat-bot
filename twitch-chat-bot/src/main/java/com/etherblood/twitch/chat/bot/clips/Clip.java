@@ -1,4 +1,4 @@
-package com.etherblood.twitch.chat.bot;
+package com.etherblood.twitch.chat.bot.clips;
 
 import java.time.Instant;
 
@@ -6,17 +6,17 @@ import java.time.Instant;
  *
  * @author Philipp
  */
-public class Command {
+public class Clip {
 
     public String id, code, author;
     public long useCount;
     public Instant lastUsed, lastModified;
 
-    public Command(String id, String code, String author) {
+    public Clip(String id, String code, String author) {
         this(id, code, author, 0, null, Instant.now());
     }
 
-    public Command(String id, String code, String author, long useCount, Instant lastUsed, Instant lastModified) {
+    public Clip(String id, String code, String author, long useCount, Instant lastUsed, Instant lastModified) {
         this.id = id;
         this.code = code;
         this.author = author;

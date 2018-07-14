@@ -1,5 +1,9 @@
 package com.etherblood.twitch.chat.bot;
 
+import com.etherblood.twitch.chat.bot.commands.CommandRepository;
+import com.etherblood.twitch.chat.bot.clips.ClipRepository;
+import com.etherblood.twitch.chat.bot.commands.alias.CommandAlias;
+import com.etherblood.twitch.chat.bot.commands.alias.CommandAliasRepository;
 import com.gikk.twirk.Twirk;
 import com.gikk.twirk.TwirkBuilder;
 import com.gikk.twirk.events.TwirkListener;
@@ -23,6 +27,7 @@ public class Main {
         CommandRepository commands = new CommandRepository(connection);
         ClipRepository clips = new ClipRepository(connection);
         WhitelistRepository whitelist = new WhitelistRepository(connection);
+        CommandAliasRepository aliases = new CommandAliasRepository(connection);
 
         String username = args[0];
         String oauth = args[1];
@@ -37,7 +42,7 @@ public class Main {
                 .withRegexTag("regex1", 1)
                 .withRegexTag("regex2", 2)
                 .build();
-        twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser, whitelist, clips));
+        twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser, whitelist, clips, aliases));
         twirk.addIrcListener(new TwirkListener() {
             @Override
             public void onDisconnect() {

@@ -1,4 +1,4 @@
-package com.etherblood.twitch.chat.bot;
+package com.etherblood.twitch.chat.bot.clips;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

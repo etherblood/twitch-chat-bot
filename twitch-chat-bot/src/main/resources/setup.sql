@@ -1,6 +1,8 @@
+CREATE SEQUENCE command_id_seq;
+
 CREATE TABLE command
 (
-    id text PRIMARY KEY,
+    id bigint PRIMARY KEY DEFAULT nextval('command_id_seq'),
     code text NOT NULL,
     author text NOT NULL,
     usecount int NOT NULL,
@@ -10,7 +12,16 @@ CREATE TABLE command
 WITH (
   OIDS=FALSE
 );
-CREATE UNIQUE INDEX command_lower_id_unique_idx on command (LOWER(id));
+
+CREATE TABLE commandalias
+(
+    alias text PRIMARY KEY,
+    command_id bigint NOT NULL REFERENCES command (id) ON DELETE CASCADE
+)
+WITH (
+  OIDS=FALSE
+);
+CREATE UNIQUE INDEX commandalias_lower_alias_unique_idx on commandalias (LOWER(alias));
 
 CREATE TABLE clip
 (
