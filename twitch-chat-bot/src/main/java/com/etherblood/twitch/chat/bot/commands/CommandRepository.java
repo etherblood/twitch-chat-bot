@@ -28,12 +28,11 @@ public class CommandRepository {
 
     private long insert(Command command) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into command (code, author, usecount, lastused, lastmodified) values (?, ?, ?, ?, ?) returning id;");
-        prepareStatement.setLong(1, command.id);
-        prepareStatement.setString(2, command.code);
-        prepareStatement.setString(3, command.author);
-        prepareStatement.setLong(4, command.useCount);
-        prepareStatement.setTimestamp(5, toTimestamp(command.lastUsed));
-        prepareStatement.setTimestamp(6, toTimestamp(command.lastModified));
+        prepareStatement.setString(1, command.code);
+        prepareStatement.setString(2, command.author);
+        prepareStatement.setLong(3, command.useCount);
+        prepareStatement.setTimestamp(4, toTimestamp(command.lastUsed));
+        prepareStatement.setTimestamp(5, toTimestamp(command.lastModified));
         ResultSet result = prepareStatement.executeQuery();
         result.next();
         return result.getLong(1);
