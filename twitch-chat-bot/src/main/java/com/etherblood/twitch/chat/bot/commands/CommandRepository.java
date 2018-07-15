@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -22,12 +20,12 @@ public class CommandRepository {
     }
 
     public long save(Command command) throws SQLException {
-        if (load(command.id) == null) {
+        if (command.id == null || load(command.id) == null) {
             return insert(command);
         }
         return update(command);
     }
-    
+
     private long insert(Command command) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into command (code, author, usecount, lastused, lastmodified) values (?, ?, ?, ?, ?) returning id;");
         prepareStatement.setLong(1, command.id);
@@ -40,21 +38,21 @@ public class CommandRepository {
         result.next();
         return result.getLong(1);
     }
-    
+
     private static Timestamp toTimestamp(Instant instant) {
-        if(instant == null) {
+        if (instant == null) {
             return null;
         }
         return Timestamp.from(instant);
     }
-    
+
     private static Instant toInstant(Timestamp timestamp) {
-        if(timestamp == null) {
+        if (timestamp == null) {
             return null;
         }
         return timestamp.toInstant();
     }
-    
+
     private long update(Command command) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("update command set code=?, author=?, usecount=?, lastused=?, lastmodified=? where id=? returning id;");
         prepareStatement.setString(1, command.code);
