@@ -125,7 +125,7 @@ public class CommandHandler implements TwirkListener {
         if (hasWritePrivilege(context) || whitelist.isWhitelisted(context.sender.getUserName())) {
             String[] parts = context.commandArgs.split(" ", 2);
             String alias = parts[0];
-            if (!baseCommands.containsKey(alias)) {
+            if (!isBaseCommand(alias)) {
                 String args = parts.length == 2 ? parts[1].trim() : "";
                 if (args.isEmpty()) {
                     CommandAlias loaded = aliases.load(alias);
@@ -155,7 +155,7 @@ public class CommandHandler implements TwirkListener {
         if (hasWritePrivilege(context) || whitelist.isWhitelisted(context.sender.getUserName())) {
             String[] parts = context.commandArgs.split(" ");
             String alias = parts[0];
-            if (!baseCommands.containsKey(alias)) {
+            if (!isBaseCommand(alias)) {
                 String args = parts.length >= 2 ? parts[1].trim() : "";
                 if (args.isEmpty()) {
                     aliases.delete(alias);
@@ -165,6 +165,10 @@ public class CommandHandler implements TwirkListener {
                 }
             }
         }
+    }
+
+    private boolean isBaseCommand(String alias) {
+        return baseCommands.containsKey(alias.toLowerCase());
     }
 
     private void listCommands(Context context) throws SQLException {
