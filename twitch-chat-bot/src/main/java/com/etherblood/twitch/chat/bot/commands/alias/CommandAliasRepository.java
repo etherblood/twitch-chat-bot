@@ -26,10 +26,10 @@ public class CommandAliasRepository {
         return update(alias);
     }
     
-    private int insert(CommandAlias command) throws SQLException {
+    private int insert(CommandAlias alias) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into commandalias (alias, command_id) values (?, ?);");
-        prepareStatement.setString(1, command.alias);
-        prepareStatement.setLong(2, command.commandId);
+        prepareStatement.setString(1, alias.alias);
+        prepareStatement.setLong(2, alias.commandId);
         return prepareStatement.executeUpdate();
     }
     
@@ -41,9 +41,9 @@ public class CommandAliasRepository {
         return prepareStatement.executeUpdate();
     }
 
-    public int delete(String commandId) throws SQLException {
+    public int delete(String alias) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("delete from commandalias where lower(alias)=lower(?);");
-        prepareStatement.setString(1, commandId);
+        prepareStatement.setString(1, alias);
         return prepareStatement.executeUpdate();
     }
 
