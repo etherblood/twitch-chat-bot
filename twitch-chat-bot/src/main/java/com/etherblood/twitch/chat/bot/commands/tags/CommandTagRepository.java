@@ -47,4 +47,14 @@ public class CommandTagRepository {
         }
         return result;
     }
+
+    public List<String> getTags() throws SQLException {
+        List<String> result = new ArrayList<>();
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select distinct tag from commandtag order by tag asc;");
+        ResultSet resultSet = prepareStatement.executeQuery();
+        while (resultSet.next()) {
+            result.add(resultSet.getString(1));
+        }
+        return result;
+    }
 }

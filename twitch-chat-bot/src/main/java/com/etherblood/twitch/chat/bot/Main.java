@@ -38,6 +38,7 @@ public class Main {
         CodeParser codeParser = new CodeParserBuilder()
                 .withTimeTag("time")
                 .withBracketTag("bracket")
+                .withCommandTag("cmd")
                 .withRegexTag("regex", 0)
                 .withRegexTag("regex0", 0)
                 .withRegexTag("regex1", 1)

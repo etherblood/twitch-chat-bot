@@ -15,6 +15,7 @@ import com.gikk.twirk.types.twitchMessage.TwitchMessage;
 import com.gikk.twirk.types.users.TwitchUser;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -56,6 +57,7 @@ public class CommandHandler implements TwirkListener {
         baseCommands.put("tag", this::tag);
         baseCommands.put("untag", this::untag);
         baseCommands.put("list", this::list);
+        baseCommands.put("tags", this::listTags);
     }
 
     @Override
@@ -65,6 +67,7 @@ public class CommandHandler implements TwirkListener {
             if (text.startsWith("!")) {
                 String[] parts = text.substring(1).split(" ", 2);
                 Context context = new Context();
+                context.baseCommands = Collections.unmodifiableMap(baseCommands);
                 context.commandAlias = parts[0];
                 context.commandArgs = parts.length == 2 ? parts[1] : "";
                 context.now = Instant.now();
@@ -237,6 +240,13 @@ public class CommandHandler implements TwirkListener {
         String response = clips.getClips(page, 25)
                 .stream()
                 .collect(Collectors.joining(", ", "clips page" + page + " [", "]."));
+        twirk.channelMessage(response);
+    }
+
+    private void listTags(Context context) throws SQLException {
+        String response = tags.getTags()
+                .stream()
+                .collect(Collectors.joining(", ", "tags [", "]."));
         twirk.channelMessage(response);
     }
 

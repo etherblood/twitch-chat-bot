@@ -1,5 +1,6 @@
 package com.etherblood.twitch.chat.bot;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -22,6 +23,18 @@ public class CodeParserBuilder {
 
     public CodeParserBuilder withTimeTag(String tag) {
         tagStrategies.put(tag, CodeParserBuilder::parseTime);
+        return this;
+    }
+
+    public CodeParserBuilder withCommandTag(String tag) {
+        tagStrategies.put(tag, x -> {
+            try {
+                x.baseCommands.get(x.tag().attribute).consume(x);
+                return "";
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         return this;
     }
 

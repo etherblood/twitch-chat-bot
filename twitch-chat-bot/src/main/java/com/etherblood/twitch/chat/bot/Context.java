@@ -5,12 +5,14 @@ import com.gikk.twirk.types.users.TwitchUser;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Map;
 
 /**
  *
  * @author Philipp
  */
 public class Context {
+    public Map<String, CommandConsumer> baseCommands;
     public String commandAlias;
     public Command command;
     public String commandArgs;
