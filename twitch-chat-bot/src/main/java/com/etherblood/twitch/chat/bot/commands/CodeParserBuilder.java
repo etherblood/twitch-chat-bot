@@ -1,6 +1,5 @@
-package com.etherblood.twitch.chat.bot;
+package com.etherblood.twitch.chat.bot.commands;
 
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -8,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,51 +17,49 @@ import java.util.stream.Collectors;
  */
 public class CodeParserBuilder {
 
-    private final Map<String, Function<Context, String>> tagStrategies = new HashMap<>();
+    private final Map<String, CodeTagStrategy> tagStrategies = new HashMap<>();
 
-    public CodeParserBuilder withTimeTag(String tag) {
-        tagStrategies.put(tag, CodeParserBuilder::parseTime);
+    public CodeParserBuilder withTimeTag(String tagName) {
+        tagStrategies.put(tagName, CodeParserBuilder::parseTime);
         return this;
     }
 
-    public CodeParserBuilder withCommandTag(String tag) {
-        tagStrategies.put(tag, x -> {
-            try {
-                x.baseCommands.get(x.tag().attribute).consume(x);
-                return "";
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+    public CodeParserBuilder withSenderTag(String tagName) {
+        tagStrategies.put(tagName, (tag, context) -> context.sender.getDisplayName());
         return this;
     }
 
-    public CodeParserBuilder withBracketTag(String tag) {
-        tagStrategies.put(tag, x -> "[");
+    public CodeParserBuilder withNowTag(String tagName) {
+        tagStrategies.put(tagName, (tag, context) -> Long.toString(context.now.toEpochMilli()));
         return this;
     }
 
-    public CodeParserBuilder withRegexTag(String tag, int groupIndex) {
-        tagStrategies.put(tag, x -> parseRegex(x, groupIndex));
+    public CodeParserBuilder withBracketTag(String tagName) {
+        tagStrategies.put(tagName, (tag, context) -> "[");
         return this;
     }
 
-    private static String parseRegex(Context context, int groupIndex) {
-        Pattern pattern = Pattern.compile(context.tag().attribute);
+    public CodeParserBuilder withRegexTag(String tagName, int groupIndex) {
+        tagStrategies.put(tagName, (tag, context) -> parseRegex(tag, context, groupIndex));
+        return this;
+    }
+
+    private static String parseRegex(CodeTag tag, CommandContext context, int groupIndex) {
+        Pattern pattern = Pattern.compile(tag.body);
         Matcher matcher = pattern.matcher(context.commandArgs);
         if (matcher.find()) {
             return matcher.group(groupIndex);
         }
-        return "[error]";
+        return "<error>";
     }
 
-    private static String parseTime(Context context) {
+    private static String parseTime(CodeTag tag, CommandContext context) {
         Instant time;
         try {
-            long epochMilli = Long.parseLong(context.tag().attribute);
+            long epochMilli = Long.parseLong(tag.body);
             time = Instant.ofEpochMilli(epochMilli);
         } catch (NumberFormatException e) {
-            time = Instant.parse(context.tag().attribute);
+            time = Instant.parse(tag.body);
         }
         Duration duration = Duration.between(time, Instant.now());
         return humanReadableFormat(duration);
@@ -83,7 +79,7 @@ public class CodeParserBuilder {
         return list.stream().filter(s -> !s.startsWith("0")).limit(2).collect(Collectors.joining(" "));
     }
 
-    public CodeParserBuilder withTagStrategy(String tag, Function<Context, String> strategy) {
+    public CodeParserBuilder withTagStrategy(String tag, CodeTagStrategy strategy) {
         tagStrategies.put(tag, strategy);
         return this;
     }

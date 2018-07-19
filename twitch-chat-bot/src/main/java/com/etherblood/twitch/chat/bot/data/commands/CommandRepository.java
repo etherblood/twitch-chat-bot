@@ -1,10 +1,10 @@
-package com.etherblood.twitch.chat.bot.commands;
+package com.etherblood.twitch.chat.bot.data.commands;
 
+import com.etherblood.twitch.chat.bot.data.Util;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
 
 /**
@@ -31,25 +31,11 @@ public class CommandRepository {
         prepareStatement.setString(1, command.code);
         prepareStatement.setString(2, command.author);
         prepareStatement.setLong(3, command.useCount);
-        prepareStatement.setTimestamp(4, toTimestamp(command.lastUsed));
-        prepareStatement.setTimestamp(5, toTimestamp(command.lastModified));
+        prepareStatement.setTimestamp(4, Util.toTimestamp(command.lastUsed));
+        prepareStatement.setTimestamp(5, Util.toTimestamp(command.lastModified));
         ResultSet result = prepareStatement.executeQuery();
         result.next();
         return result.getLong(1);
-    }
-
-    private static Timestamp toTimestamp(Instant instant) {
-        if (instant == null) {
-            return null;
-        }
-        return Timestamp.from(instant);
-    }
-
-    private static Instant toInstant(Timestamp timestamp) {
-        if (timestamp == null) {
-            return null;
-        }
-        return timestamp.toInstant();
     }
 
     private long update(Command command) throws SQLException {
@@ -57,8 +43,8 @@ public class CommandRepository {
         prepareStatement.setString(1, command.code);
         prepareStatement.setString(2, command.author);
         prepareStatement.setLong(3, command.useCount);
-        prepareStatement.setTimestamp(4, toTimestamp(command.lastUsed));
-        prepareStatement.setTimestamp(5, toTimestamp(command.lastModified));
+        prepareStatement.setTimestamp(4, Util.toTimestamp(command.lastUsed));
+        prepareStatement.setTimestamp(5, Util.toTimestamp(command.lastModified));
         prepareStatement.setLong(6, command.id);
         ResultSet result = prepareStatement.executeQuery();
         result.next();
@@ -79,23 +65,11 @@ public class CommandRepository {
             String code = commandsResult.getString("code");
             String author = commandsResult.getString("author");
             long useCount = commandsResult.getLong("usecount");
-            Instant lastUsed = toInstant(commandsResult.getTimestamp("lastused"));
-            Instant lastModified = toInstant(commandsResult.getTimestamp("lastmodified"));
+            Instant lastUsed = Util.toInstant(commandsResult.getTimestamp("lastused"));
+            Instant lastModified = Util.toInstant(commandsResult.getTimestamp("lastmodified"));
             return new Command(commandId, code, author, useCount, lastUsed, lastModified);
         }
         return null;
     }
 
-//    public List<String> getCommands(int page, int pageSize) throws SQLException {
-//        List<String> result = new ArrayList<>();
-//        //sorted by use frequency
-//        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select id from command order by (1.0 / (usecount + 1)) * (current_timestamp - lastmodified) asc offset ? limit ?;");
-//        prepareStatement.setInt(1, page * pageSize);
-//        prepareStatement.setInt(2, pageSize);
-//        ResultSet resultSet = prepareStatement.executeQuery();
-//        while (resultSet.next()) {
-//            result.add(resultSet.getString(1));
-//        }
-//        return result;
-//    }
 }

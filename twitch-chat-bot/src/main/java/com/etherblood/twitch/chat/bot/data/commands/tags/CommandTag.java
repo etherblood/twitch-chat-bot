@@ -1,4 +1,4 @@
-package com.etherblood.twitch.chat.bot.commands.tags;
+package com.etherblood.twitch.chat.bot.data.commands.tags;
 
 /**
  *

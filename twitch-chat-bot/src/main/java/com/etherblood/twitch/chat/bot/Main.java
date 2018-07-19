@@ -1,9 +1,10 @@
 package com.etherblood.twitch.chat.bot;
 
-import com.etherblood.twitch.chat.bot.commands.CommandRepository;
-import com.etherblood.twitch.chat.bot.clips.ClipRepository;
-import com.etherblood.twitch.chat.bot.commands.alias.CommandAliasRepository;
-import com.etherblood.twitch.chat.bot.commands.tags.CommandTagRepository;
+import com.etherblood.twitch.chat.bot.commands.CommandHandler;
+import com.etherblood.twitch.chat.bot.data.WhitelistRepository;
+import com.etherblood.twitch.chat.bot.data.commands.CommandRepository;
+import com.etherblood.twitch.chat.bot.data.commands.alias.CommandAliasRepository;
+import com.etherblood.twitch.chat.bot.data.commands.tags.CommandTagRepository;
 import com.gikk.twirk.Twirk;
 import com.gikk.twirk.TwirkBuilder;
 import com.gikk.twirk.events.TwirkListener;
@@ -25,7 +26,6 @@ public class Main {
     public static void main(String... args) throws IOException, InterruptedException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost/twitchbot", "twitchbot", "twitchbot");
         CommandRepository commands = new CommandRepository(connection);
-        ClipRepository clips = new ClipRepository(connection);
         WhitelistRepository whitelist = new WhitelistRepository(connection);
         CommandAliasRepository aliases = new CommandAliasRepository(connection);
         CommandTagRepository tags = new CommandTagRepository(connection);
@@ -35,21 +35,13 @@ public class Main {
         String channel = "#" + args[2];
         Twirk twirk = new TwirkBuilder(channel, username, oauth)
                 .build();
-        CodeParser codeParser = new CodeParserBuilder()
-                .withTimeTag("time")
-                .withBracketTag("bracket")
-                .withCommandTag("cmd")
-                .withRegexTag("regex", 0)
-                .withRegexTag("regex0", 0)
-                .withRegexTag("regex1", 1)
-                .withRegexTag("regex2", 2)
-                .build();
-        twirk.addIrcListener(new CommandHandler(twirk, commands, codeParser, whitelist, clips, aliases, tags));
+        twirk.addIrcListener(new CommandHandler(twirk, commands, whitelist, aliases, tags));
         twirk.addIrcListener(new TwirkListener() {
             @Override
             public void onDisconnect() {
                 try {
                     main(args);
+                    connection.close();
                 } catch (IOException | InterruptedException | SQLException ex) {
                     ex.printStackTrace(System.err);
                 }

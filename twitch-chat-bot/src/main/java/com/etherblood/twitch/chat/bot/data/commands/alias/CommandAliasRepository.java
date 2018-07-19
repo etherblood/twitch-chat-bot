@@ -1,5 +1,6 @@
-package com.etherblood.twitch.chat.bot.commands.alias;
+package com.etherblood.twitch.chat.bot.data.commands.alias;
 
+import com.etherblood.twitch.chat.bot.data.Util;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,14 +26,14 @@ public class CommandAliasRepository {
         }
         return update(alias);
     }
-    
+
     private int insert(CommandAlias alias) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into commandalias (alias, command_id) values (?, ?);");
         prepareStatement.setString(1, alias.alias);
         prepareStatement.setLong(2, alias.commandId);
         return prepareStatement.executeUpdate();
     }
-    
+
     private int update(CommandAlias alias) throws SQLException {
         PreparedStatement prepareStatement = psqlConnection.prepareStatement("update commandalias set alias=?, command_id=? where lower(alias)=lower(?);");
         prepareStatement.setString(1, alias.alias);
@@ -52,7 +53,13 @@ public class CommandAliasRepository {
         prepareStatement.setString(1, alias);
         ResultSet commandsResult = prepareStatement.executeQuery();
         if (commandsResult.next()) {
-            return new CommandAlias(commandsResult.getString("alias"), commandsResult.getLong("command_id"));
+            return new CommandAlias(
+                    commandsResult.getString("alias"),
+                    commandsResult.getLong("command_id"),
+                    commandsResult.getString("author"),
+                    commandsResult.getLong("usecount"),
+                    Util.toInstant(commandsResult.getTimestamp("lastused")),
+                    Util.toInstant(commandsResult.getTimestamp("lastmodified")));
         }
         return null;
     }

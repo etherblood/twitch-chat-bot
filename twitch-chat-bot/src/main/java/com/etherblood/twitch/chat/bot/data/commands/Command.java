@@ -1,4 +1,4 @@
-package com.etherblood.twitch.chat.bot.commands;
+package com.etherblood.twitch.chat.bot.data.commands;
 
 import java.time.Instant;
 
@@ -8,8 +8,9 @@ import java.time.Instant;
  */
 public class Command {
 
+    public String code;
     public Long id;
-    public String code, author;
+    public String author;
     public long useCount;
     public Instant lastUsed, lastModified;
 
