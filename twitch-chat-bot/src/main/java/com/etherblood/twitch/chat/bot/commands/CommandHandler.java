@@ -43,6 +43,7 @@ public class CommandHandler implements TwirkListener {
                 .withSenderTag("sender")
                 .withBracketTag("bracket")
                 .withMathTag("math")
+                .withEchoTag("echo")
                 .withRegexTag("regex", 0)
                 .withRegexTag("regex0", 0)
                 .withRegexTag("regex1", 1)
@@ -79,6 +80,7 @@ public class CommandHandler implements TwirkListener {
             String text = message.getContent();
             if (text.startsWith("!")) {
                 CommandContext context = new CommandContext();
+                context.twirk = twirk;
                 context.now = Instant.now();
                 context.sender = sender;
                 String response = textCommand(new CodeTag(null, text.substring(1)), context).trim();
