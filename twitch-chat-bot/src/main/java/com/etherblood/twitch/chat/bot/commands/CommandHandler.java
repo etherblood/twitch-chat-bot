@@ -42,6 +42,7 @@ public class CommandHandler implements TwirkListener {
                 .withNowTag("now")
                 .withSenderTag("sender")
                 .withBracketTag("bracket")
+                .withMathTag("math")
                 .withRegexTag("regex", 0)
                 .withRegexTag("regex0", 0)
                 .withRegexTag("regex1", 1)

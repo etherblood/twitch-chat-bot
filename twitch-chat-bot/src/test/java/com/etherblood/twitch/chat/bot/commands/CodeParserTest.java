@@ -43,4 +43,14 @@ public class CodeParserTest {
         assertEquals("sender name is: " + context.sender.getDisplayName(), text);
     }
 
+    @Test
+    public void math() throws SQLException {
+        CodeParser parser = new CodeParserBuilder()
+                .withMathTag("math")
+                .build();
+        String code = "result is: [math]5 - 7 * (8 + 3)[/math]";
+        String text = parser.codeToText(code, null);
+        assertEquals("result is: " + Long.toString(5 - 7 * (8 + 3)), text);
+    }
+
 }

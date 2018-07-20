@@ -1,5 +1,9 @@
 package com.etherblood.twitch.chat.bot.commands;
 
+import com.etherblood.twitch.chat.bot.commands.expressions.ExpressionEvaluator;
+import com.etherblood.twitch.chat.bot.commands.expressions.NumberToken;
+import com.etherblood.twitch.chat.bot.commands.expressions.OperatorToken;
+import com.etherblood.twitch.chat.bot.commands.expressions.BracketToken;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -10,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import com.etherblood.twitch.chat.bot.commands.expressions.ExpressionToken;
 
 /**
  *
@@ -37,6 +42,15 @@ public class CodeParserBuilder {
     public CodeParserBuilder withBracketTag(String tagName) {
         tagStrategies.put(tagName, (tag, context) -> "[");
         return this;
+    }
+
+    public CodeParserBuilder withMathTag(String tagName) {
+        tagStrategies.put(tagName, CodeParserBuilder::eval);
+        return this;
+    }
+
+    private static String eval(CodeTag tag, CommandContext context) {
+        return new ExpressionEvaluator().eval(tag.body);
     }
 
     public CodeParserBuilder withRegexTag(String tagName, int groupIndex) {

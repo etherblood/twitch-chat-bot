@@ -5,10 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -73,17 +69,4 @@ public class CommandAliasRepository {
         }
         return null;
     }
-
-//    public List<String> getCommands(int page, int pageSize) throws SQLException {
-//        Map<Long, String> map = new LinkedHashMap<>();
-//        //sorted by use frequency
-//        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select alias, command_id from commandalias order by (1.0 / (usecount + 1)) * (current_timestamp - lastmodified) asc offset ? limit ?;");
-//        prepareStatement.setInt(1, page * pageSize);
-//        prepareStatement.setInt(2, pageSize);
-//        ResultSet resultSet = prepareStatement.executeQuery();
-//        while (resultSet.next()) {
-//            map.putIfAbsent(resultSet.getLong(2), resultSet.getString(1));
-//        }
-//        return new ArrayList<>(map.values());
-//    }
 }
