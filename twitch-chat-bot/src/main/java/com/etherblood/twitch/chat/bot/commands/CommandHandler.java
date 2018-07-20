@@ -113,7 +113,7 @@ public class CommandHandler implements TwirkListener {
     }
 
     private String textCommand(CodeTag tag, CommandContext context) throws SQLException {
-        String[] parts = tag.body.substring(1).split(" ", 2);
+        String[] parts = tag.body.split(" ", 2);
         String commandAlias = parts[0];
         CommandAlias alias = aliases.load(commandAlias);
         Command command = commands.load(alias.commandId);

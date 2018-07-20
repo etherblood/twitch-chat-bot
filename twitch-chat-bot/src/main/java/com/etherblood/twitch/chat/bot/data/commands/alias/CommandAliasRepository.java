@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -28,17 +30,25 @@ public class CommandAliasRepository {
     }
 
     private int insert(CommandAlias alias) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into commandalias (alias, command_id) values (?, ?);");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into commandalias (alias, command_id, author, usecount, lastused, lastmodified) values (?, ?, ?, ?, ?, ?);");
         prepareStatement.setString(1, alias.alias);
         prepareStatement.setLong(2, alias.commandId);
+        prepareStatement.setString(3, alias.author);
+        prepareStatement.setLong(4, alias.useCount);
+        prepareStatement.setTimestamp(5, Util.toTimestamp(alias.lastUsed));
+        prepareStatement.setTimestamp(6, Util.toTimestamp(alias.lastModified));
         return prepareStatement.executeUpdate();
     }
 
     private int update(CommandAlias alias) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("update commandalias set alias=?, command_id=? where lower(alias)=lower(?);");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("update commandalias set alias=?, command_id=?, author=?, usecount=?, lastused=?, lastmodified=? where lower(alias)=lower(?);");
         prepareStatement.setString(1, alias.alias);
         prepareStatement.setLong(2, alias.commandId);
-        prepareStatement.setString(3, alias.alias);
+        prepareStatement.setString(3, alias.author);
+        prepareStatement.setLong(4, alias.useCount);
+        prepareStatement.setTimestamp(5, Util.toTimestamp(alias.lastUsed));
+        prepareStatement.setTimestamp(6, Util.toTimestamp(alias.lastModified));
+        prepareStatement.setString(7, alias.alias);
         return prepareStatement.executeUpdate();
     }
 
@@ -64,16 +74,16 @@ public class CommandAliasRepository {
         return null;
     }
 
-    public List<String> getCommands(int page, int pageSize) throws SQLException {
-        List<String> result = new ArrayList<>();
-        //sorted by use frequency
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select alias from commandalias, command where command_id=id order by (1.0 / (usecount + 1)) * (current_timestamp - lastmodified) asc offset ? limit ?;");
-        prepareStatement.setInt(1, page * pageSize);
-        prepareStatement.setInt(2, pageSize);
-        ResultSet resultSet = prepareStatement.executeQuery();
-        while (resultSet.next()) {
-            result.add(resultSet.getString(1));
-        }
-        return result;
-    }
+//    public List<String> getCommands(int page, int pageSize) throws SQLException {
+//        Map<Long, String> map = new LinkedHashMap<>();
+//        //sorted by use frequency
+//        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select alias, command_id from commandalias order by (1.0 / (usecount + 1)) * (current_timestamp - lastmodified) asc offset ? limit ?;");
+//        prepareStatement.setInt(1, page * pageSize);
+//        prepareStatement.setInt(2, pageSize);
+//        ResultSet resultSet = prepareStatement.executeQuery();
+//        while (resultSet.next()) {
+//            map.putIfAbsent(resultSet.getLong(2), resultSet.getString(1));
+//        }
+//        return new ArrayList<>(map.values());
+//    }
 }
