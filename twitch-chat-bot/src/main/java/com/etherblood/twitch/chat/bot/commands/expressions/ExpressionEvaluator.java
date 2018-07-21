@@ -1,11 +1,16 @@
 package com.etherblood.twitch.chat.bot.commands.expressions;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -13,53 +18,38 @@ import java.util.regex.Pattern;
  */
 public class ExpressionEvaluator {
 
-    private static final Pattern SYMBOL_PATTERN = Pattern.compile("([0-9]+)|(\\+|\\-|\\*|\\/)|(\\(|\\))");
-    private static final int LONG_GROUP = 1;
+    private static final String NUMBER_PATTERN = "[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?";
+    private static final String OPERATOR_PATTERN = "\\+|\\-|\\*|\\/";
+    private static final String BRACKET_PATTERN = "\\(|\\)";
+    private static final Pattern SYMBOL_PATTERN = Pattern.compile(Stream.of(NUMBER_PATTERN, OPERATOR_PATTERN, BRACKET_PATTERN).collect(Collectors.joining(")|(", "(", ")")));
+    private static final int NUMBER_GROUP = 1;
     private static final int OPERATOR_GROUP = 2;
-    private static final int PARENTHESIS_GROUP = 3;
+    private static final int BRACKET_GROUP = 3;
+
+    private static final DecimalFormat FORMAT = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
 
     public String eval(String expression) {
         List<ExpressionToken> tokens = toTokens(expression);
         Deque<ExpressionToken> postfix = toPostfix(tokens);
-        long result = evaluatePostfix(postfix);
-        return Long.toString(result);
+        double result = evaluatePostfix(postfix);
+        return FORMAT.format(result);
     }
 
-    private long evaluatePostfix(Deque<ExpressionToken> postfix) throws AssertionError {
-        Deque<Long> stack = new ArrayDeque<>();
+    private double evaluatePostfix(Deque<ExpressionToken> postfix) throws AssertionError {
+        Deque<Double> stack = new ArrayDeque<>();
         for (ExpressionToken token : postfix) {
             if (token instanceof NumberToken) {
                 stack.addLast(((NumberToken) token).getValue());
             } else {
-                long b = stack.removeLast();
-                long a = stack.removeLast();
-                long result;
-                switch ((OperatorToken) token) {
-                    case ADD:
-                        result = a + b;
-                        break;
-                    case SUBTRACT:
-                        result = a - b;
-                        break;
-                    case MULTIPLY:
-                        result = a * b;
-                        break;
-                    case DIVIDE:
-                        result = a / b;
-                        break;
-                    default:
-                        throw new AssertionError(token);
-                }
-                stack.addLast(result);
+                ((OperatorToken) token).apply(stack);
             }
         }
-        long result = stack.pop();
-        return result;
+        return stack.pop();
     }
 
     private Deque<ExpressionToken> toPostfix(List<ExpressionToken> tokens) {
         Deque<ExpressionToken> output = new ArrayDeque<>();
-        Deque<ExpressionToken> operators = new ArrayDeque<>();
+        Deque<ControlToken> operators = new ArrayDeque<>();
         for (ExpressionToken token : tokens) {
             if (token instanceof NumberToken) {
                 output.add(token);
@@ -75,9 +65,9 @@ public class ExpressionEvaluator {
                     OperatorToken operator = (OperatorToken) token;
                     while (!operators.isEmpty()
                             && operators.peekLast() != BracketToken.LEFT
-                            && (((OperatorToken)operators.peekLast()).getPrecedence() > operator.getPrecedence()
-                            || (((OperatorToken)operators.peekLast()).getPrecedence() == operator.getPrecedence()
-                            && ((OperatorToken)operators.peekLast()).getAssociativity() == OperatorToken.Associativity.LEFT))                            ) {
+                            && (((OperatorToken) operators.peekLast()).getPrecedence() > operator.getPrecedence()
+                            || (((OperatorToken) operators.peekLast()).getPrecedence() == operator.getPrecedence()
+                            && ((OperatorToken) operators.peekLast()).getAssociativity() == OperatorToken.Associativity.LEFT))) {
                         output.add(operators.removeLast());
                     }
                     operators.addLast(operator);
@@ -95,12 +85,12 @@ public class ExpressionEvaluator {
         Matcher matcher = SYMBOL_PATTERN.matcher(expression);
         int position = 0;
         while (matcher.find(position)) {
-            if (matcher.group(LONG_GROUP) != null) {
-                tokens.add(NumberToken.of(matcher.group(LONG_GROUP)));
+            if (matcher.group(NUMBER_GROUP) != null) {
+                tokens.add(NumberToken.of(matcher.group(NUMBER_GROUP)));
             } else if (matcher.group(OPERATOR_GROUP) != null) {
                 tokens.add(OperatorToken.of(matcher.group(OPERATOR_GROUP)));
-            } else if (matcher.group(PARENTHESIS_GROUP) != null) {
-                tokens.add(BracketToken.of(matcher.group(PARENTHESIS_GROUP)));
+            } else if (matcher.group(BRACKET_GROUP) != null) {
+                tokens.add(BracketToken.of(matcher.group(BRACKET_GROUP)));
             }
 
             position = matcher.end();

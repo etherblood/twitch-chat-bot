@@ -4,7 +4,7 @@ package com.etherblood.twitch.chat.bot.commands.expressions;
  *
  * @author Philipp
  */
-public enum BracketToken implements ExpressionToken {
+public enum BracketToken implements ControlToken {
     LEFT, RIGHT;
 
     public static BracketToken of(String expression) {

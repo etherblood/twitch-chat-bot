@@ -6,17 +6,22 @@ package com.etherblood.twitch.chat.bot.commands.expressions;
  */
 public class NumberToken implements ExpressionToken {
 
-    private final long value;
+    private final double value;
 
-    private NumberToken(long value) {
+    private NumberToken(double value) {
         this.value = value;
     }
 
-    public long getValue() {
+    public double getValue() {
         return value;
     }
 
     public static NumberToken of(String expression) {
-        return new NumberToken(Long.parseLong(expression));
+        return new NumberToken(Double.parseDouble(expression));
+    }
+
+    @Override
+    public String toString() {
+        return "#" + value;
     }
 }

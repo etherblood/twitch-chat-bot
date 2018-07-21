@@ -53,4 +53,44 @@ public class CodeParserTest {
         assertEquals("result is: " + Long.toString(5 - 7 * (8 + 3)), text);
     }
 
+    @Test
+    public void math2() throws SQLException {
+        CodeParser parser = new CodeParserBuilder()
+                .withMathTag("math")
+                .build();
+        String code = "result is: [math]-15 / 3[/math]";
+        String text = parser.codeToText(code, null);
+        assertEquals("result is: " + Long.toString(-15 / 3), text);
+    }
+
+    @Test
+    public void math3() throws SQLException {
+        CodeParser parser = new CodeParserBuilder()
+                .withMathTag("math")
+                .build();
+        String code = "result is: [math]-75--6+-3-+5[/math]";
+        String text = parser.codeToText(code, null);
+        assertEquals("result is: " + Long.toString(-75- -6+ -3- +5), text);
+    }
+
+    @Test
+    public void math4() throws SQLException {
+        CodeParser parser = new CodeParserBuilder()
+                .withMathTag("math")
+                .build();
+        String code = "result is: [math]15/4[/math]";
+        String text = parser.codeToText(code, null);
+        assertEquals("result is: 3.75", text);
+    }
+
+    @Test
+    public void math5() throws SQLException {
+        CodeParser parser = new CodeParserBuilder()
+                .withMathTag("math")
+                .build();
+        String code = "result is: [math]-5  /15[/math]";
+        String text = parser.codeToText(code, null);
+        assertEquals("result is: -0.333", text);
+    }
+
 }
