@@ -18,13 +18,11 @@ import java.util.stream.Stream;
  */
 public class ExpressionEvaluator {
 
-    private static final String NUMBER_PATTERN = "[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?";
-    private static final String OPERATOR_PATTERN = "\\+|\\-|\\*|\\/";
-    private static final String BRACKET_PATTERN = "\\(|\\)";
-    private static final Pattern SYMBOL_PATTERN = Pattern.compile(Stream.of(NUMBER_PATTERN, OPERATOR_PATTERN, BRACKET_PATTERN).collect(Collectors.joining(")|(", "(", ")")));
-    private static final int NUMBER_GROUP = 1;
-    private static final int OPERATOR_GROUP = 2;
-    private static final int BRACKET_GROUP = 3;
+    private static final String NUMBER_PATTERN = "([-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)";
+    private static final String OPERATOR_PATTERN = "(\\+|\\-|\\*|\\/)";
+    private static final String BRACKET_PATTERN = "(\\(|\\))";
+    private static final Pattern NUMBER_OR_BRACKET = Pattern.compile(Stream.of(NUMBER_PATTERN, BRACKET_PATTERN).collect(Collectors.joining("|")));
+    private static final Pattern OPERATOR_OR_BRACKET = Pattern.compile(Stream.of(OPERATOR_PATTERN, BRACKET_PATTERN).collect(Collectors.joining("|")));
 
     private static final DecimalFormat FORMAT = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
 
@@ -82,18 +80,22 @@ public class ExpressionEvaluator {
 
     private List<ExpressionToken> toTokens(String expression) {
         List<ExpressionToken> tokens = new ArrayList<>();
-        Matcher matcher = SYMBOL_PATTERN.matcher(expression);
+        Matcher numberOrBracket = NUMBER_OR_BRACKET.matcher(expression);
+        Matcher operatorOrBracket = OPERATOR_OR_BRACKET.matcher(expression);
+        Matcher matcher = numberOrBracket;
         int position = 0;
         while (matcher.find(position)) {
-            if (matcher.group(NUMBER_GROUP) != null) {
-                tokens.add(NumberToken.of(matcher.group(NUMBER_GROUP)));
-            } else if (matcher.group(OPERATOR_GROUP) != null) {
-                tokens.add(OperatorToken.of(matcher.group(OPERATOR_GROUP)));
-            } else if (matcher.group(BRACKET_GROUP) != null) {
-                tokens.add(BracketToken.of(matcher.group(BRACKET_GROUP)));
-            }
-
             position = matcher.end();
+            if (matcher.group(1) != null) {
+                if (matcher == numberOrBracket) {
+                    tokens.add(NumberToken.of(matcher.group(1)));
+                } else {
+                    tokens.add(OperatorToken.of(matcher.group(1)));
+                }
+                matcher = matcher == numberOrBracket ? operatorOrBracket : numberOrBracket;
+            } else if (matcher.group(2) != null) {
+                tokens.add(BracketToken.of(matcher.group(2)));
+            }
         }
         return tokens;
     }

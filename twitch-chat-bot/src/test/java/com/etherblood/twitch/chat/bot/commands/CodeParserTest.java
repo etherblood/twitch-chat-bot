@@ -93,4 +93,14 @@ public class CodeParserTest {
         assertEquals("result is: -0.333", text);
     }
 
+    @Test
+    public void math6() throws SQLException {
+        CodeParser parser = new CodeParserBuilder()
+                .withMathTag("math")
+                .build();
+        String code = "result is: [math]40+2[/math]";
+        String text = parser.codeToText(code, null);
+        assertEquals("result is: 42", text);
+    }
+
 }
