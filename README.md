@@ -1,8 +1,8 @@
 
 current core commands are:
 
-__!set &lt;command_name> &lt;command_code>__  
-&nbsp;&nbsp;creates or overwrites command (mods & whitelist only)  
+__!set &lt;command_name> [command_code]__  
+&nbsp;&nbsp;creates or overwrites command or deletes it if [command code] is empty (mods & whitelist only)  
 __!permit &lt;user_name>__  
 &nbsp;&nbsp;adds &lt;user_name> to the whitelist (mods only)  
 __!unpermit &lt;user_name>__  
