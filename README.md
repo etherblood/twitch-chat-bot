@@ -42,5 +42,5 @@ __[cmd]&lt;command_name> &lt;command_arguments>[/cmd]__
 &nbsp;&nbsp;returns the result of the evaluated given command  
 
 all core commands can also be added as tags, eg:  
-[set]&lt;command_name> &lt;command_code>[/set]  
+[set]&lt;command_name> [command_code][/set]  
 permission filters still apply
