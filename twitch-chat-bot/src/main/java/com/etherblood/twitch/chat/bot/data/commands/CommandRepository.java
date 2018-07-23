@@ -20,54 +20,57 @@ public class CommandRepository {
     }
 
     public long save(Command command) throws SQLException {
-        if (command.id == null || load(command.id) == null) {
+        if (load(command.alias) == null) {
             return insert(command);
         }
         return update(command);
     }
 
     private long insert(Command command) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into command (code, author, usecount, lastused, lastmodified) values (?, ?, ?, ?, ?) returning id;");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("insert into command (code, author, usecount, lastused, lastmodified, alias) values (?, ?, ?, ?, ?, ?) returning id;");
         prepareStatement.setString(1, command.code);
         prepareStatement.setString(2, command.author);
         prepareStatement.setLong(3, command.useCount);
         prepareStatement.setTimestamp(4, Util.toTimestamp(command.lastUsed));
         prepareStatement.setTimestamp(5, Util.toTimestamp(command.lastModified));
+        prepareStatement.setString(6, command.alias);
         ResultSet result = prepareStatement.executeQuery();
         result.next();
         return result.getLong(1);
     }
 
     private long update(Command command) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("update command set code=?, author=?, usecount=?, lastused=?, lastmodified=? where id=? returning id;");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("update command set code=?, author=?, usecount=?, lastused=?, lastmodified=?, alias=? where id=? returning id;");
         prepareStatement.setString(1, command.code);
         prepareStatement.setString(2, command.author);
         prepareStatement.setLong(3, command.useCount);
         prepareStatement.setTimestamp(4, Util.toTimestamp(command.lastUsed));
         prepareStatement.setTimestamp(5, Util.toTimestamp(command.lastModified));
-        prepareStatement.setLong(6, command.id);
+        prepareStatement.setString(6, command.alias);
         ResultSet result = prepareStatement.executeQuery();
         result.next();
         return result.getLong(1);
     }
 
-    public int delete(long commandId) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("delete from command where id=?;");
-        prepareStatement.setLong(1, commandId);
+    public int delete(String alias) throws SQLException {
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("delete from command where lower(alias)=lower(?);");
+        prepareStatement.setString(1, alias);
         return prepareStatement.executeUpdate();
     }
 
-    public Command load(long commandId) throws SQLException {
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select * from command where id=?;");
-        prepareStatement.setLong(1, commandId);
+    public Command load(String alias) throws SQLException {
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select * from command where lower(alias)=lower(?);");
+        prepareStatement.setString(1, alias);
         ResultSet commandsResult = prepareStatement.executeQuery();
         if (commandsResult.next()) {
+            long id = commandsResult.getLong("id");
             String code = commandsResult.getString("code");
             String author = commandsResult.getString("author");
             long useCount = commandsResult.getLong("usecount");
             Instant lastUsed = Util.toInstant(commandsResult.getTimestamp("lastused"));
             Instant lastModified = Util.toInstant(commandsResult.getTimestamp("lastmodified"));
-            return new Command(commandId, code, author, useCount, lastUsed, lastModified);
+            String commandAlias = commandsResult.getString("alias");
+            return new Command(id, commandAlias, code, author, useCount, lastUsed, lastModified);
         }
         return null;
     }

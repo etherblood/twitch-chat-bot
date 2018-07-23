@@ -3,7 +3,6 @@ package com.etherblood.twitch.chat.bot;
 import com.etherblood.twitch.chat.bot.commands.CommandHandler;
 import com.etherblood.twitch.chat.bot.data.WhitelistRepository;
 import com.etherblood.twitch.chat.bot.data.commands.CommandRepository;
-import com.etherblood.twitch.chat.bot.data.commands.alias.CommandAliasRepository;
 import com.etherblood.twitch.chat.bot.data.commands.tags.CommandTagRepository;
 import com.gikk.twirk.Twirk;
 import com.gikk.twirk.TwirkBuilder;
@@ -27,7 +26,6 @@ public class Main {
         Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost/twitchbot", "twitchbot", "twitchbot");
         CommandRepository commands = new CommandRepository(connection);
         WhitelistRepository whitelist = new WhitelistRepository(connection);
-        CommandAliasRepository aliases = new CommandAliasRepository(connection);
         CommandTagRepository tags = new CommandTagRepository(connection);
 
         String username = args[0];
@@ -35,7 +33,7 @@ public class Main {
         String channel = "#" + args[2];
         Twirk twirk = new TwirkBuilder(channel, username, oauth)
                 .build();
-        twirk.addIrcListener(new CommandHandler(twirk, commands, whitelist, aliases, tags));
+        twirk.addIrcListener(new CommandHandler(twirk, commands, whitelist, tags));
         twirk.addIrcListener(new TwirkListener() {
             @Override
             public void onDisconnect() {

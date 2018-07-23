@@ -3,8 +3,6 @@ package com.etherblood.twitch.chat.bot.commands;
 import com.etherblood.twitch.chat.bot.data.WhitelistRepository;
 import com.etherblood.twitch.chat.bot.data.commands.CommandRepository;
 import com.etherblood.twitch.chat.bot.data.commands.Command;
-import com.etherblood.twitch.chat.bot.data.commands.alias.CommandAlias;
-import com.etherblood.twitch.chat.bot.data.commands.alias.CommandAliasRepository;
 import com.etherblood.twitch.chat.bot.data.commands.tags.CommandTag;
 import com.etherblood.twitch.chat.bot.data.commands.tags.CommandTagRepository;
 import com.gikk.twirk.Twirk;
@@ -27,16 +25,14 @@ public class CommandHandler implements TwirkListener {
     private final Twirk twirk;
     private final WhitelistRepository whitelist;
     private final CommandRepository commands;
-    private final CommandAliasRepository aliases;
     private final CommandTagRepository tags;
     private final Set<String> reserved = new HashSet<>();
     private final CodeParser codeParser;
     private final USER_TYPE minPrivilidge = USER_TYPE.MOD;
 
-    public CommandHandler(Twirk twirk, CommandRepository commands, WhitelistRepository whitelist, CommandAliasRepository aliases, CommandTagRepository tags) {
+    public CommandHandler(Twirk twirk, CommandRepository commands, WhitelistRepository whitelist, CommandTagRepository tags) {
         this.twirk = twirk;
         this.commands = commands;
-        this.aliases = aliases;
         this.codeParser = new CodeParserBuilder()
                 .withTimeTag("time")
                 .withNowTag("now")
@@ -51,7 +47,6 @@ public class CommandHandler implements TwirkListener {
                 .withTagStrategy("set", this::setCommand)
                 .withTagStrategy("permit", this::permit)
                 .withTagStrategy("unpermit", this::unpermit)
-                .withTagStrategy("alias", this::setAlias)
                 .withTagStrategy("tag", this::tag)
                 .withTagStrategy("untag", this::untag)
                 .withTagStrategy("list", this::list)
@@ -64,8 +59,6 @@ public class CommandHandler implements TwirkListener {
         reserved.add("set");
         reserved.add("permit");
         reserved.add("unpermit");
-        reserved.add("alias");
-        reserved.add("unalias");
         reserved.add("tag");
         reserved.add("untag");
         reserved.add("list");
@@ -118,8 +111,7 @@ public class CommandHandler implements TwirkListener {
     private String textCommand(CodeTag tag, CommandContext context) throws SQLException {
         String[] parts = tag.body.split(" ", 2);
         String commandAlias = parts[0];
-        CommandAlias alias = aliases.load(commandAlias);
-        Command command = commands.load(alias.commandId);
+        Command command = commands.load(commandAlias);
         try {
             context.commandArgs = parts.length == 2 ? parts[1] : "";
             return codeParser.codeToText(command.code, context);
@@ -127,16 +119,12 @@ public class CommandHandler implements TwirkListener {
             command.useCount++;
             command.lastUsed = context.now;
             commands.save(command);
-            alias.useCount++;
-            alias.lastUsed = context.now;
-            aliases.save(alias);
         }
     }
 
     private String show(CodeTag tag, CommandContext context) throws SQLException {
         assertAccess(isMod(context) || whitelist.isWhitelisted(context.sender.getUserName()));
-        CommandAlias alias = aliases.load(tag.body.trim());
-        Command command = commands.load(alias.commandId);
+        Command command = commands.load(tag.body.trim());
         return command.code;
     }
 
@@ -147,31 +135,9 @@ public class CommandHandler implements TwirkListener {
         if (!isReserved(alias)) {
             String args = parts.length == 2 ? parts[1].trim() : "";
             if (args.isEmpty()) {
-                CommandAlias loaded = aliases.load(alias);
-                if (loaded != null) {
-                    commands.delete(loaded.commandId);
-                }
+                    commands.delete(alias);
             } else {
-                long commandId = commands.save(new Command(args, context.sender.getDisplayName()));
-                aliases.save(new CommandAlias(alias, commandId, context.sender.getDisplayName()));
-            }
-        }
-        return "";
-    }
-
-    private String setAlias(CodeTag tag, CommandContext context) throws SQLException {
-        assertAccess(isMod(context) || whitelist.isWhitelisted(context.sender.getUserName()));
-        String[] parts = tag.body.split(" ");
-        String alias = parts[0];
-        if (!isReserved(alias)) {
-            String args = parts.length >= 2 ? parts[1].trim() : "";
-            if (args.isEmpty()) {
-                aliases.delete(alias);
-            } else {
-                CommandAlias loaded = aliases.load(args);
-                if (loaded != null) {
-                    aliases.save(new CommandAlias(alias, loaded.commandId, context.sender.getDisplayName()));
-                }
+                commands.save(new Command(alias, args, context.sender.getDisplayName()));
             }
         }
         return "";
@@ -182,9 +148,9 @@ public class CommandHandler implements TwirkListener {
         String[] parts = tag.body.split(" ");
         String alias = parts[0];
         String tagName = parts.length >= 2 ? parts[1].trim() : "";
-        CommandAlias loaded = aliases.load(alias);
-        if (loaded != null) {
-            tags.save(new CommandTag(tagName, loaded.commandId));
+        Command command = commands.load(alias);
+        if (command != null) {
+            tags.save(new CommandTag(tagName, command.id));
         }
         return "";
     }
@@ -194,9 +160,9 @@ public class CommandHandler implements TwirkListener {
         String[] parts = tag.body.split(" ");
         String alias = parts[0];
         String tagName = parts.length >= 2 ? parts[1].trim() : "";
-        CommandAlias loaded = aliases.load(alias);
-        if (loaded != null) {
-            tags.delete(loaded.commandId, tagName);
+        Command command = commands.load(alias);
+        if (command != null) {
+            tags.delete(command.id, tagName);
         }
         return "";
     }
