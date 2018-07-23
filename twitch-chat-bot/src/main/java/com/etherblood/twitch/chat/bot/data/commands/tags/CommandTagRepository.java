@@ -39,7 +39,7 @@ public class CommandTagRepository {
 
     public List<String> getCommands(String tag) throws SQLException {
         List<String> result = new ArrayList<>();
-        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select alias from commandtag t, commandalias a where a.command_id=t.command_id and lower(t.tag)=lower(?) order by lower(alias) asc;");
+        PreparedStatement prepareStatement = psqlConnection.prepareStatement("select alias from commandtag t, command c where c.id=t.command_id and lower(t.tag)=lower(?) order by lower(alias) asc;");
         prepareStatement.setString(1, tag);
         ResultSet resultSet = prepareStatement.executeQuery();
         while (resultSet.next()) {
