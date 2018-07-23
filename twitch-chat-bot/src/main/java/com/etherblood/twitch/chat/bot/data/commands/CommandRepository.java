@@ -20,10 +20,12 @@ public class CommandRepository {
     }
 
     public long save(Command command) throws SQLException {
-        if (load(command.alias) == null) {
-            return insert(command);
+        Command loaded = load(command.alias);
+        if (loaded != null) {
+            command.id = loaded.id;
+            return update(command);
         }
-        return update(command);
+        return insert(command);
     }
 
     private long insert(Command command) throws SQLException {
