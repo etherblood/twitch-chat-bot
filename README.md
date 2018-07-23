@@ -7,8 +7,6 @@ __!permit &lt;user_name>__
 &nbsp;&nbsp;adds &lt;user_name> to the whitelist (mods only)  
 __!unpermit &lt;user_name>__  
 &nbsp;&nbsp;removes &lt;user_name> from the whitelist (mods only)  
-__!alias &lt;alias_name> [command_name]__  
-&nbsp;&nbsp;creates a new alias or removes it if [command_name] is empty (mods & whitelist only)  
 __!tag &lt;command_name> &lt;tag_name>__  
 &nbsp;&nbsp;adds the &lt;tag_name> tag to the command &lt;command_name> (mods & whitelist only)  
 __!untag &lt;command_name> &lt;tag_name>__  
