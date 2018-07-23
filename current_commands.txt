@@ -1,12 +1,9 @@
  kick
  cry
- bot
  Lucy
  bloody
  missed_it
- graph
  why_is_it_shit
- say
  whatcouldgowrong
  14
  pytorch_tut
@@ -19,125 +16,113 @@
  help_reward
  still,
  chat
- pretzel
- no_sound
  corner-fail
  run
  song
  comments
- idgaf
- Kappa
  today
- still
  need_for_speed
  reddit
- suk
  13
  42
  git
  AndyFromLithuania
- useless
  now
- hardware
  gpu
  some_params
- monstro
  boses
  bloat_items
  whatsgoingon
  buildsareop
  hugs
- learniang
  bosses
  sparepc
  pause
  Larry_wins
- worhless
  firsttry
  isbric
- sudo
  serpemo
  art
  neca420
  rewardsareshit
- items
  worthless
  uptime
- pull
+ kills
  neca
  whodidthis
- learning
  2
  github
  when
  input
  reward
  discord
- help
- killcount
  buildsareshit
- L
+ still
+ say
+ graph
+ monstro
+ idgaf
  rewards
+ pull
+ Kappa
+ items
  etherblood
  ppo
  rip
  1
  ?
- kills
  clamps
- dqn
  left
  bloatlul
- box
  observe
- faster
+ killcount
  permit
  unpermit
- close
  43
  kill_4
  leeroy_jenkins
  58
  kill_5
  45
- dingle-first-spike
  97
  third_blood
  114
  128
- spike
- list
- talkchannel
- panic
+ new_rewards
  dingle-pure-skill
- stack
- commands
- tags
- right
  !
  new_reward
- second_blood
+ horAIzon
+ clip
  23
  meta
- new_rewards
+ commands
+ first_blood
  corner
  caIc
+ second_blood
  calc
  humble
- show
- horAIzon
  penalty
  weird_entropy
+ dingle-first-spike
  ddd
- reset_runtime
- untag
- clip
- tag
- first_blood
- firstblood
- alias
  runtime
- reset
  wins
+ reset_runtime
  clips
+ tags
+ spike
+ close
+ list
+ stack
+ talkchannel
+ untag
+ firstblood
+ reset
+ L
+ learning
+ dqn
+ tag
  set
+ show
