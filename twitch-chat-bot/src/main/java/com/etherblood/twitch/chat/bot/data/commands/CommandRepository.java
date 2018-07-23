@@ -47,6 +47,7 @@ public class CommandRepository {
         prepareStatement.setTimestamp(4, Util.toTimestamp(command.lastUsed));
         prepareStatement.setTimestamp(5, Util.toTimestamp(command.lastModified));
         prepareStatement.setString(6, command.alias);
+        prepareStatement.setLong(7, command.id);
         ResultSet result = prepareStatement.executeQuery();
         result.next();
         return result.getLong(1);
